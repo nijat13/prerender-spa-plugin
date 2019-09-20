@@ -62,6 +62,7 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
   }
 
   const afterEmit = (compilation, done) => {
+    console.log('afterEmit this._options: ', this._options)
     const PrerendererInstance = new Prerenderer(this._options)
 
     PrerendererInstance.initialize()
