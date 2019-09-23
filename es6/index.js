@@ -74,6 +74,7 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
       // Backwards-compatibility with v2 (postprocessHTML should be migrated to postProcess)
       .then((renderedRoutes) => {
       console.log('renderedRoutes: ', renderedRoutes)
+      console.log('this._options.postProcessHtml: ', this._options.postProcessHtml)
       return this._options.postProcessHtml
         ? renderedRoutes.map(renderedRoute => {
           const processed = this._options.postProcessHtml(renderedRoute)
