@@ -62,34 +62,25 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
   }
 
   const afterEmit = (compilation, done) => {
-    console.log('afterEmit this._options: ', this._options)
     const PrerendererInstance = new Prerenderer(this._options)
 
     PrerendererInstance.initialize()
       .then(() => {
-        console.log('PrerendererInstance.renderRoutes this._options.routes: ', this._options.routes)
-        console.log('PrerendererInstance.renderRoutes: ', PrerendererInstance.renderRoutes(this._options.routes || []))
         return PrerendererInstance.renderRoutes(this._options.routes || [])
       })
       // Backwards-compatibility with v2 (postprocessHTML should be migrated to postProcess)
       .then((renderedRoutes) => {
-      console.log('this._options.postProcessHtml: ', this._options.postProcessHtml)
-      // console.log('renderedRoutes: ', JSON.stringify(renderedRoutes))
       return this._options.postProcessHtml
         ? renderedRoutes.map(renderedRoute => {
           const processed = this._options.postProcessHtml(renderedRoute)
           if (typeof processed === 'string') renderedRoute.html = processed
           else renderedRoute = processed
-
-          console.log('renderedRoute: ', renderedRoute)
-
           return renderedRoute
         })
         : renderedRoutes;
       })
       // Run postProcess hooks.
       .then(renderedRoutes => {
-          console.log('this._options.postProcess: ', this._options.postProcess)
           return this._options.postProcess
             ? Promise.all(renderedRoutes.map(renderedRoute => this._options.postProcess(renderedRoute)))
             : renderedRoutes
@@ -101,16 +92,12 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
           throw new Error('[prerender-spa-plugin] Rendered routes are empty, did you forget to return the `context` object in postProcess?')
         }
 
-        console.log('then renderedRoutes: ', renderedRoutes)
-
         return renderedRoutes
       })
       // Minify html files if specified in config.
       .then(renderedRoutes => {
-        console.log('this._options.minify: ', this._options.minify);
         if (!this._options.minify) return renderedRoutes
 
-        console.log('renderedRoutes: ', renderedRoutes);
         renderedRoutes.forEach(route => {
           route.html = minify(route.html, this._options.minify)
         })
@@ -124,7 +111,6 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
             rendered.outputPath = path.join(this._options.outputDir || this._options.staticDir, rendered.route, 'index.html')
           }
         })
-        console.log('.then renderedRoutes: ', renderedRoutes);
 
         return renderedRoutes
       })
@@ -148,13 +134,9 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
               throw err
             })
         }))
-        console.log('.then processedRoutes: ', processedRoutes);
-        console.log('.then promises: ', promises);
-
         return promises
       })
       .then(r => {
-        console.log('.then r: ', r);
         PrerendererInstance.destroy()
         done()
       })
@@ -162,7 +144,6 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
         PrerendererInstance.destroy()
         const msg = '[prerender-spa-plugin] Unable to prerender all routes!'
         console.error(msg)
-        console.log('err: ', err);
         compilation.errors.push(new Error(msg))
         done()
       })
